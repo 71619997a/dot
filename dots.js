@@ -8,7 +8,7 @@ var circleClick = function(e){
         this.parentNode.removeChild(this);
         var randx = Math.random() * (svgspace.width.animVal.value - 80) + 40;
         var randy = Math.random() * (svgspace.height.animVal.value - 80) + 40;
-        drawRand(randx, randy);
+        drawDotAt(randx, randy);
     }
     else if (this.getAttribute("fill") == "purple"){
         this.setAttribute("fill", "red");
@@ -33,9 +33,10 @@ var makeDot = function(x, y){
     return element;
 };
 
-var drawRand = function(x, y){
+var drawDotAt = function(x, y){
     var dot = makeDot(x, y);
     svgspace.appendChild(dot);
+    return dot;
 }
 
 
@@ -67,16 +68,29 @@ var animateDots = function() {
         var dot = dots[i]
         var x = parseInt(dot.getAttribute("cx"));
         var y = parseInt(dot.getAttribute("cy"));
+        var r = parseInt(dot.getAttribute("r"));
 
-        if( x<40 || x>(750 - 40)) dot.xv=parseInt(-dot.xv); 
-        if( y<40 || y>(750 - 40)) dot.yv=parseInt(-dot.yv);
-        x += parseInt(dot.xv);
-        y += parseInt(dot.yv);
-
-
+        if( (x<r && dot.xv<0) || x>(750 - r) && dot.xv>0 ) dot.xv=-dot.xv; 
+        if( (y<r && dot.yv<0) || y>(750 - r) && dot.yv>0 ) dot.yv=-dot.yv;
+        x += dot.xv;
+        y += dot.yv;
+        if(x === 375) {
+            x += dot.xv;
+            r /= 2;
+            if(r < 1) {
+                svgspace.removeChild(dot);
+                i--;
+                len--;
+                continue;
+            }
+            var dot2 = drawDotAt(x, y);
+            dot2.xv = dot.xv;
+            dot2.yv = -dot.yv;
+            dot2.setAttribute("r", r);
+        }
         dot.setAttribute("cx", x); 
         dot.setAttribute("cy", y); 
-
+        dot.setAttribute("r", r);
     };
 
     requestID = window.requestAnimationFrame( drawDots );
